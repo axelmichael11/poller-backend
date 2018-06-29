@@ -32,6 +32,7 @@ module.exports = {
                 res.status(401).send({response: err})
             }
             if (success) {
+                console.log("SUCCESS ON RETRIEVING PROFILE")
                 let sendProfile = profileValidate.formatSendProfile(success.rows[0], user)
                 res.status(200).send(sendProfile)
             }

@@ -93,8 +93,8 @@ const updatePollTask = require('../database/cron-jobs').updatePolls;
 const deleteReportedPolls = require('../database/cron-jobs').deleteReportedPolls;
 
 //CRON JOBS ON
-// deleteReportedPolls.start();
-// updatePollTask.start();
+deleteReportedPolls.start();
+updatePollTask.start();
 
 app.use(function(err, req, res, next){
   console.error(err.stack);

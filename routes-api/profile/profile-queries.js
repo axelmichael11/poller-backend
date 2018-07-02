@@ -4,7 +4,6 @@ const Client = require('../../database/client')
 const profileValidate = require('./profile-validation')
 const env = {
     uid: process.env.uid,
-    users: process.env.userTable
 };
 
 module.exports = {
@@ -39,7 +38,7 @@ module.exports = {
         })
     },
     updateProfileQuery: (res,user,profileInfo) => {
-        Client.query(`UPDATE ${env.users}
+        Client.query(`UPDATE poller_data
               SET age=($1),
               ethnicity=($2),
               profession=($3),

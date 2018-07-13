@@ -116,7 +116,8 @@ vote.reducedYesOrNoData = function(dataArray){
         acc.religion_data['unknown religion']=+1; 
     } else {
         let religion;
-        if (current[5]===true){
+        console.log('RELIGION', current[5])
+        if (current[5]==='true'){
             religion = 'religious';
         } else {
             religion = 'not religious';
@@ -192,6 +193,7 @@ vote.formatSendData = function(yes_data_array, no_data_array, voteCount, expirat
 }
 
 vote.formatPercentofVotes = (categories, total) => {
+    console.log('categories', categories, total)
     Object.keys(categories).map((category)=>{
         categories[category]= (categories[category])/total *100
     })

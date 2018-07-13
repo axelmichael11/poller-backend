@@ -7,8 +7,8 @@ const validator = require('../../lib/validation-methods')
 
 module.exports = {
     userProfileValidate : function(incomingProfile){
-        let {gender, age, ethnicity, profession, country, religion} = incomingProfile;
-        let profile = Object.assign({},{ethnicity,gender, age, profession, country, religion});
+        let {gender, age, ethnicity, profession, country, religion, politics} = incomingProfile;
+        let profile = Object.assign({},{ethnicity,gender, age, profession, country, religion, politics});
         for(var i in profile){
             if (profile[i] === undefined){
                 profile[i] = null;
@@ -23,13 +23,17 @@ module.exports = {
         if (validator.notNumberOrNull(profile.ethnicity)){
             throw new Error('invalid ethnicity data type');
         }
+        if (validator.notNumberOrNull(profile.politics)){
+            throw new Error('invalid politics data type');
+        }
             return profile
         },
 
     formatSendProfile : function(rows,authProfile){
-      let {gender, age, ethnicity, profession, country, religion} = rows;
+        console.log('rows!', rows)
+      let {gender, age, ethnicity, profession, country, religion, politics} = rows;
       let {nickname, picture, email} = authProfile;
-      let returnedProfile = Object.assign({},{gender, age, profession, country, ethnicity, religion, nickname, email, picture});
+      let returnedProfile = Object.assign({},{gender, age, profession, country, ethnicity, religion, politics, nickname, email, picture});
       return returnedProfile
     }
 }

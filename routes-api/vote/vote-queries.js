@@ -66,10 +66,10 @@ module.exports = {
 castNoVote = (res,user,voteData)=>{
     Client.query(`
     UPDATE polls 
-    SET array_no_data = array_no_data || ARRAY[[($1),($2),($3),($4),($5),($6)]],
-    votes = array_append(votes, ($7))
-    WHERE polls.author_username=($8)
-    AND polls.created_at=($9) 
+    SET array_no_data = array_no_data || ARRAY[[($1),($2),($3),($4),($5),($6),($7)]],
+    votes = array_append(votes, ($8))
+    WHERE polls.author_username=($9)
+    AND polls.created_at=($10) 
     RETURNING polls.array_yes_data, polls.array_no_data, cardinality(votes) as count;
   `,
   [
@@ -79,6 +79,7 @@ castNoVote = (res,user,voteData)=>{
     voteData.profession,
     voteData.gender,
     voteData.religion,
+    voteData.politics,
     user[`${env.uid}`],
     voteData.author_username,
     voteData.created_at,
@@ -105,10 +106,10 @@ castNoVote = (res,user,voteData)=>{
 castYesVote = (res,user,voteData)=>{
     Client.query(`
                 UPDATE polls 
-                SET array_yes_data = array_yes_data || ARRAY[[($1),($2),($3),($4),($5),($6)]],
-                votes = array_append(votes, ($7))
-                WHERE polls.author_username=($8)
-                AND polls.created_at=($9) 
+                SET array_yes_data = array_yes_data || ARRAY[[($1),($2),($3),($4),($5),($6),($7)]],
+                votes = array_append(votes, ($8))
+                WHERE polls.author_username=($9)
+                AND polls.created_at=($10) 
                 RETURNING polls.array_yes_data, polls.array_no_data, cardinality(votes) as count;
               `,
               [
@@ -118,6 +119,7 @@ castYesVote = (res,user,voteData)=>{
                 voteData.profession,
                 voteData.gender,
                 voteData.religion,
+                voteData.politics,
                 user[`${env.uid}`],
                 voteData.author_username,
                 voteData.created_at,

@@ -31,7 +31,7 @@ module.exports = {
                 res.status(401).send({response: err})
             }
             if (success) {
-                console.log("SUCCESS ON RETRIEVING PROFILE")
+                console.log("SUCCESS ON RETRIEVING PROFILE" , success.rows[0])
                 let sendProfile = profileValidate.formatSendProfile(success.rows[0], user)
                 res.status(200).send(sendProfile)
             }
@@ -44,8 +44,9 @@ module.exports = {
               profession=($3),
               religion=($4),
               gender=($5),
-              country=($6)
-              WHERE id=($7) 
+              country=($6),
+              politics=($7)
+              WHERE id=($8)
               RETURNING age, ethnicity, profession, religion, gender, country;`,
               [profileInfo.age,
               profileInfo.ethnicity,
@@ -53,6 +54,7 @@ module.exports = {
               profileInfo.religion,
               profileInfo.gender,
               profileInfo.country,
+              profileInfo.politics,
               user[`${env.uid}`],
               ],
               function(err, success) {

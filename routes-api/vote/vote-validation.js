@@ -116,7 +116,6 @@ vote.reducedYesOrNoData = function(dataArray){
         acc.religion_data['unknown religion']=+1; 
     } else {
         let religion;
-        console.log('RELIGION', current[5])
         if (current[5]==='true'){
             religion = 'religious';
         } else {
@@ -124,6 +123,14 @@ vote.reducedYesOrNoData = function(dataArray){
         }
         acc.religion_data[religion]=+1
     }
+
+    // politics
+    if(current[6]===null){
+        acc.politics_data['unknown politics']=+1; 
+    } else {
+        acc.politics_data[current[6]]=+1
+    }
+
 	return acc
     }, {
         totalVotes:0,
@@ -132,7 +139,8 @@ vote.reducedYesOrNoData = function(dataArray){
         ethnicity_data:{},
         gender_data:{}, 
         profession_data:{}, 
-        religion_data:{}
+        religion_data:{},
+        politics_data:{},
     });
     
     let result = {}
@@ -143,6 +151,7 @@ vote.reducedYesOrNoData = function(dataArray){
     result.gender_data = vote.formatPercentofVotes(dataCount.gender_data, dataCount.totalVotes);
     result.profession_data = vote.formatPercentofVotes(dataCount.profession_data, dataCount.totalVotes);
     result.religion_data = vote.formatPercentofVotes(dataCount.religion_data, dataCount.totalVotes);
+    result.politics_data = vote.formatPercentofVotes(dataCount.politics_data, dataCount.totalVotes);
     console.log('result of reduced percents $%$%$%%$', result)
     return result;
 }
@@ -199,7 +208,6 @@ vote.formatPercentofVotes = (categories, total) => {
     })
 
     console.log('vote categories...',categories)
-
     return categories
 }
 

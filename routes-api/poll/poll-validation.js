@@ -1,15 +1,18 @@
 
+const subjects_list = require('./poll-subjects.js')
+
+
 
 module.exports = {
     userPollValidate : function(incomingPoll){
         let {nickname, pollQuestion, pollSubject} = incomingPoll;
         let poll = Object.assign({},{nickname, pollQuestion, pollSubject});
-        console.log('poll!!!', poll)
-        if (!poll.nickname || poll.nickname.length > 20 || typeof poll.pollSubject !== 'string'){
+        console.log('poll!!!', poll, typeof poll.pollSubject ) 
+        if (!poll.nickname || poll.nickname.length > 20 || typeof poll.nickname !== 'string'){
             throw new Error('invalid nickname type or length, or nonexistant property');
         }
-        if (!poll.pollSubject || poll.pollSubject.length < 5 || typeof poll.pollSubject !== 'string'){
-            throw new Error('invalid subject type or length, or nonexistant property');
+        if ( typeof poll.pollSubject !== 'number' ){
+            throw new Error('invalid subject type, or nonexistant property');
         }
         if (!poll.pollQuestion || poll.pollQuestion.length < 10 || typeof poll.pollQuestion !== 'string'){
             throw new Error('invalid question type or length, or nonexistant property');

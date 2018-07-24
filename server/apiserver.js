@@ -86,8 +86,7 @@ app.use(require('../routes-api/poll'));
 app.use(require('../routes-api/explore'));
 app.use(require('../routes-api/vote'));
 app.use(require('../routes-api/report'));
-
-// require('../routes-api/vote-routes.js')(app, Client, checkJwt);
+app.use(require('../routes-api/feedback'));
 
 
 //CRON JOBS

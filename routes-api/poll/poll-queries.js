@@ -66,7 +66,8 @@ module.exports = {
     getPollsQuery: (res,user, expirationDate)=>{
         Client.query(`
         SELECT question, subject, author_username, created_at,
-        (($2)-EXTRACT(hour from (now() - date))) as expiration
+        ($2)-(EXTRACT(day from (now()-date)*24)+EXTRACT(hour from (now()-date))) 
+        as expiration
         from polls WHERE author_id=($1)
          `,
         [

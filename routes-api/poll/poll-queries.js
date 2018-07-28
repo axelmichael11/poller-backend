@@ -25,11 +25,14 @@ module.exports = {
         ],
         function(err, success) {
         if (success && success.command==='UPDATE' && success.rowCount== 1) {
+            console.log('SUCCESS', success)
             res.status(200).json(success.rows[0])
         } else {
             if (err.name =='error' && err.constraint=='polls_id_check') {
+                console.log('err', err)
                 res.status(550).send({error: err.name})
             } else {
+                console.log('err', err)
                 res.status(500).send('unknown error')
             }
         }

@@ -5,3 +5,7 @@ package-lock.json
 .nyc_output
 
 .test.env
+
+.babelrc
+
+jest.config.js

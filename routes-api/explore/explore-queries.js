@@ -15,7 +15,12 @@ module.exports = {
         Client.query(`
                 SELECT question, subject, author_username, created_at, 
                 ($1)-(EXTRACT(day from (now()-date)*24)+EXTRACT(hour from (now()-date))) 
-                as expiration
+                as expiration,
+                polltype,
+                mc_a_option, 
+                mc_b_option, 
+                mc_c_option, 
+                mc_d_option
                 FROM polls
                 ORDER BY random()
                 LIMIT 20;

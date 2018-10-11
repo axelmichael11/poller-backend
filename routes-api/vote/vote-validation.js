@@ -71,7 +71,6 @@ vote.validateCastVoteData = function(incomingPostVoteData){
 vote.reducedYesOrNoData = function(dataArray){
     console.log('#@#@##@@#@# REDUCE METHOD')
     let dataCount = dataArray.reduce((acc, current, i)=>{
-	console.log('current',acc, current, i)
     acc.totalVotes++;
     //age
 	if(current[0]===null){
@@ -130,7 +129,6 @@ vote.reducedYesOrNoData = function(dataArray){
     } else {
         acc.politics_data[current[6]]=+1
     }
-
 	return acc
     }, {
         totalVotes:0,
@@ -144,6 +142,7 @@ vote.reducedYesOrNoData = function(dataArray){
     });
     
     let result = {}
+
     result.totalVotes = dataCount.totalVotes
     result.age_data = vote.formatPercentofVotes(dataCount.age_data, dataCount.totalVotes);
     result.country_data = vote.formatPercentofVotes(dataCount.country_data, dataCount.totalVotes);

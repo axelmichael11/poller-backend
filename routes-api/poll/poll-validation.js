@@ -5,9 +5,9 @@ const subjects_list = require('./poll-subjects.js')
 
 module.exports = {
     userPollValidate : function(incomingPoll){
-        let {nickname, pollQuestion, pollSubject} = incomingPoll;
-        let poll = Object.assign({},{nickname, pollQuestion, pollSubject});
-        console.log('poll!!!', poll, typeof poll.pollSubject ) 
+        let {nickname, pollQuestion, pollSubject, answerOptions, type} = incomingPoll;
+        let poll = Object.assign({},{nickname, pollQuestion, pollSubject, answerOptions, type});
+        console.log('poll!!!', poll, (poll.type!=='MC' || poll.type!=='YN') ) 
         if (!poll.nickname || poll.nickname.length > 20 || typeof poll.nickname !== 'string'){
             throw new Error('invalid nickname type or length, or nonexistant property');
         }
@@ -17,8 +17,24 @@ module.exports = {
         if (!poll.pollQuestion || poll.pollQuestion.length < 10 || typeof poll.pollQuestion !== 'string'){
             throw new Error('invalid question type or length, or nonexistant property');
         }
+
+        if (!poll.type || poll.type.length > 3 || typeof poll.type !== 'string'){
+            throw new Error('invalid type type or length, or nonexistant property');
+        }
+
+        if ( poll.type=='MC' && !poll.answerOptions && poll.answerOptions.length < 2 ){
+            throw new Error('invalid MC options, or nonexistant property');
+        }
+
+        if ( poll.type=='YN' && poll.answerOptions){
+            throw new Error('invalid YN options, or nonexistant property');
+        }
+
         return poll
     },
+
+
+
     deletePollValidate : function(incomingPoll){
         let {created_at} = incomingPoll;
         

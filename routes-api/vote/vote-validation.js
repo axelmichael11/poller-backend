@@ -6,8 +6,8 @@ const validator = require('../../lib/validation-methods')
 
 vote.validateGetVoteData = function(incomingGetVoteData){
     console.log('this is the incoming data', incomingGetVoteData)
-    let {created_at, author_username} = incomingGetVoteData;
-    let voteData = Object.assign({},{created_at, author_username});
+    let {created_at, author_username, type} = incomingGetVoteData;
+    let voteData = Object.assign({},{created_at, author_username, type});
 
     if (!voteData.created_at  || typeof voteData.created_at !== 'string'){
         throw new Error('invalid created_at type or length, or nonexistant property');
@@ -16,13 +16,18 @@ vote.validateGetVoteData = function(incomingGetVoteData){
     if (!voteData.author_username  || typeof voteData.author_username !== 'string'){
         throw new Error('invalid author_username type or length, or nonexistant property');
     }
+
+    if (!voteData.type || voteData.type.length > 3 || typeof voteData.type !== 'string'){
+        throw new Error('invalid vote type or length, or nonexistant property');
+    }
     
     console.log('he0re is the votedata function,', voteData)
     return voteData
 }
 
 vote.validateCastVoteData = function(incomingPostVoteData){
-    let {created_at,
+    let {author_username,
+        created_at,
         age, 
         country, 
         ethnicity, 
@@ -30,10 +35,10 @@ vote.validateCastVoteData = function(incomingPostVoteData){
         profession,
         religion,
         vote, 
-        author_username, } = incomingPostVoteData;
+        type } = incomingPostVoteData;
 
 
-    let voteData = Object.assign({},{created_at,age, country, ethnicity, gender, profession, religion, vote, author_username});
+    let voteData = Object.assign({},{created_at,age, country, ethnicity, gender, profession, religion, vote, author_username, type,});
 
     if (!voteData.created_at  || typeof voteData.created_at !== 'string'){
         throw new Error('invalid created_at type or length, or nonexistant property');
@@ -60,15 +65,19 @@ vote.validateCastVoteData = function(incomingPostVoteData){
         console.log('religion',voteData.religion)
         throw new Error('invalid religion data type', voteData.religion);
     }
-    if (!voteData.vote || typeof voteData.vote !== 'string'){
+
+    if (!voteData.vote || typeof voteData.vote !== 'string' || voteData.vote.length > 4){
         throw new Error('invalid vote data type or nonexistant property');
+    }
+    if (!voteData.type || voteData.type.length > 3 || typeof voteData.type !== 'string'){
+        throw new Error('invalid type type or length, or nonexistant property');
     }
 
     return voteData
 }
 
 
-vote.reducedYesOrNoData = function(dataArray){
+vote.collectVoteColumnData = function(dataArray){
     console.log('#@#@##@@#@# REDUCE METHOD')
     let dataCount = dataArray.reduce((acc, current, i)=>{
     acc.totalVotes++;
@@ -155,6 +164,15 @@ vote.reducedYesOrNoData = function(dataArray){
     return result;
 }
 
+vote.reducedMultipleChoiceColumn = function(dataArray){
+    if (dataArray==null){
+        return null
+    }
+
+
+
+},
+
 vote.categorizeAge = function(age){
     console.log('this is the AGEEEE', age)
     let intAge = parseInt(age);
@@ -185,20 +203,89 @@ vote.categorizeAge = function(age){
 }
 
 
-vote.formatSendData = function(yes_data_array, no_data_array, voteCount, expiration){
+vote.YNformatSendData = function(yes_data_array, no_data_array, voteCount, expiration){
 
     let isZero = (voteCount ===0);
     let data = {};
     data.totals_data = {}
-    data.yes_data = vote.reducedYesOrNoData(yes_data_array);
-    data.no_data = vote.reducedYesOrNoData(no_data_array);
+    data.type = 'YN'
+    //demographic data
+    data.yes_data = vote.collectVoteColumnData(yes_data_array);
+    data.no_data = vote.collectVoteColumnData(no_data_array);
+
+    //totals data
     data.totals_data.yesVotes = isZero ? 0 : (data.yes_data.totalVotes/voteCount)*100;
     data.totals_data.noVotes = isZero ? 0 : (data.no_data.totalVotes/voteCount)*100;
     data.totals_data.totalVotes = voteCount;
-    data.expiration = expiration;
+    // data.expiration = expiration;
     console.log('this is the DATA TO SEND', data)
     return data
 }
+
+vote.MCformatSendData = function(success){
+    console.log("SUCCESS FROM DB FOR MC", success);
+    let isZero = (success.voteCount ===0);
+    let data = {};
+    data.type = 'MC'
+    data.answerOptions = {}
+    data.labels = [];
+    data.answerOptions.mc_a_data = {};
+    data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data);
+    data.answerOptions.mc_a_data.answerOption = success.mc_a_option;
+    data.answerOptions.mc_a_data.label = 'A'
+    data.labels.push('A')
+    data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_a_data.demographics.totalVotes/success.count)*100
+    
+    data.answerOptions.mc_b_data = {};
+    data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data);
+    data.answerOptions.mc_b_data.answerOption = success.mc_b_option;
+    data.answerOptions.mc_b_data.label = 'B'
+    data.labels.push('B')
+    data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_b_data.demographics.totalVotes/success.count)*100
+
+    if (success.mc_c_option){
+        data.answerOptions.mc_c_data = {};
+        data.answerOptions.mc_c_data.demographics = vote.collectVoteColumnData(success.mc_c_data);
+        data.answerOptions.mc_c_data.answerOption = success.mc_c_option;
+        data.answerOptions.mc_c_data.label = 'C'
+        data.labels.push('C')
+        data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_c_data.demographics.totalVotes/success.count)*100
+
+    } else {
+        data.answerOptions.mc_c_data = null
+    }
+    
+    if (success.mc_d_option){
+        data.answerOptions.mc_d_data = {};
+        data.answerOptions.mc_d_data.demographics = vote.collectVoteColumnData(success.mc_d_data);
+        data.answerOptions.mc_d_data.answerOption = success.mc_d_option;
+        data.answerOptions.mc_d_data.label = 'D'
+        data.labels.push('D')
+        data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_d_data.demographics.totalVotes/success.count)*100
+    } else {
+        data.answerOptions.mc_d_data = null
+    }
+
+    data.totalVotes = success.count;
+    // data.expiration = expiration;
+    console.log('this is the MC DATA TO SEND', data)
+    return data
+},
+
+vote.getLabels = function(){
+    let {answerOptions} = this.props.pollData.totals_data;
+      return Object.keys(answerOptions).reduce((acc, curr, i) =>{
+        if (answerOptions[curr].answerOption){
+          console.log(this.props.answerLabels[i],'being pushed')
+          let dataPoint = this.props.answerLabels[i];
+          return [...acc, dataPoint];
+        } else {
+          return acc
+        }
+      }, [])
+  }
+
+
 
 vote.formatPercentofVotes = (categories, total) => {
     console.log('categories', categories, total)

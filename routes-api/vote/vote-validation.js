@@ -1,4 +1,6 @@
 const Date = require('datejs');
+const randomColor = require('randomcolor');
+
 
 const vote = {};
 
@@ -11,7 +13,7 @@ vote.validateGetVoteData = function(incomingGetVoteData){
 
     if (!voteData.created_at  || typeof voteData.created_at !== 'string'){
         throw new Error('invalid created_at type or length, or nonexistant property');
-    }
+    } 
 
     if (!voteData.author_username  || typeof voteData.author_username !== 'string'){
         throw new Error('invalid author_username type or length, or nonexistant property');
@@ -233,6 +235,7 @@ vote.MCformatSendData = function(success){
     data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data);
     data.answerOptions.mc_a_data.answerOption = success.mc_a_option;
     data.answerOptions.mc_a_data.label = 'A'
+    data.answerOptions.mc_a_data.color = randomColor();
     data.labels.push('A')
     data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_a_data.demographics.totalVotes/success.count)*100
     
@@ -240,6 +243,7 @@ vote.MCformatSendData = function(success){
     data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data);
     data.answerOptions.mc_b_data.answerOption = success.mc_b_option;
     data.answerOptions.mc_b_data.label = 'B'
+    data.answerOptions.mc_b_data.color = randomColor();
     data.labels.push('B')
     data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_b_data.demographics.totalVotes/success.count)*100
 
@@ -248,6 +252,7 @@ vote.MCformatSendData = function(success){
         data.answerOptions.mc_c_data.demographics = vote.collectVoteColumnData(success.mc_c_data);
         data.answerOptions.mc_c_data.answerOption = success.mc_c_option;
         data.answerOptions.mc_c_data.label = 'C'
+        data.answerOptions.mc_c_data.color = randomColor();
         data.labels.push('C')
         data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_c_data.demographics.totalVotes/success.count)*100
 
@@ -260,6 +265,7 @@ vote.MCformatSendData = function(success){
         data.answerOptions.mc_d_data.demographics = vote.collectVoteColumnData(success.mc_d_data);
         data.answerOptions.mc_d_data.answerOption = success.mc_d_option;
         data.answerOptions.mc_d_data.label = 'D'
+        data.answerOptions.mc_d_data.color = randomColor();
         data.labels.push('D')
         data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_d_data.demographics.totalVotes/success.count)*100
     } else {

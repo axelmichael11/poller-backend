@@ -1,6 +1,9 @@
 const Date = require('datejs');
 const randomColor = require('randomcolor');
 
+const ethnicity_data = require('../../lib/ethnicities')
+const profession_data = require('../../lib/professions')
+const politics_data = require('../../lib/politics')
 
 const vote = {};
 
@@ -79,13 +82,18 @@ vote.validateCastVoteData = function(incomingPostVoteData){
 }
 
 
-vote.collectVoteColumnData = function(dataArray){
-    console.log('#@#@##@@#@# REDUCE METHOD')
+vote.collectVoteColumnData = function(dataArray, color){
+    console.log('#@#@##@@#@# VOTE COLLECT', dataArray)
+    
+
+
     let dataCount = dataArray.reduce((acc, current, i)=>{
     acc.totalVotes++;
     //age
+    console.log('CURRENT', current)
 	if(current[0]===null){
-        acc.age_data['unknown age']=+1; 
+
+        acc.age_data['Unknown']=+1;
     } else {
         let age = vote.categorizeAge(dataArray[i][0])
         console.log('AGEEEE',age)
@@ -93,25 +101,26 @@ vote.collectVoteColumnData = function(dataArray){
     }
     //country
     if(current[1]===null){
-        acc.country_data['unknown country']=+1; 
+        acc.country_data['Unknown']=+1; 
     } else {
         acc.country_data[current[1]]=+1
     }
     //ethnicity
     if(current[2]===null){
-        acc.ethnicity_data['unknown ethnicity']=+1; 
+        acc.ethnicity_data['Unknown']=+1; 
     } else {
-        acc.ethnicity_data[current[2]]=+1
+
+        acc.ethnicity_data[ethnicity_data[current[2]]]=+1
     }
     //profession
     if(current[3]===null){
-        acc.profession_data['unknown profession']=+1; 
+        acc.profession_data['Unknown']=+1; 
     } else {
-        acc.profession_data[current[3]]=+1
+        acc.profession_data[profession_data[current[3]]]=+1
     }
     //gender
     if(current[4]===null){
-        acc.gender_data['unknown gender']=+1; 
+        acc.gender_data['Unknown']=+1; 
     } else {
         let gender;
         if (current[4]=='M'){
@@ -123,7 +132,7 @@ vote.collectVoteColumnData = function(dataArray){
     }
     //religion
     if(current[5]===null){
-        acc.religion_data['unknown religion']=+1; 
+        acc.religion_data['Unknown']=+1; 
     } else {
         let religion;
         if (current[5]==='true'){
@@ -136,9 +145,9 @@ vote.collectVoteColumnData = function(dataArray){
 
     // politics
     if(current[6]===null){
-        acc.politics_data['unknown politics']=+1; 
+        acc.politics_data['Unknown']=+1; 
     } else {
-        acc.politics_data[current[6]]=+1
+        acc.politics_data[politics_data[current[6]]]=+1
     }
 	return acc
     }, {
@@ -155,14 +164,16 @@ vote.collectVoteColumnData = function(dataArray){
     let result = {}
 
     result.totalVotes = dataCount.totalVotes
-    result.age_data = vote.formatPercentofVotes(dataCount.age_data, dataCount.totalVotes);
-    result.country_data = vote.formatPercentofVotes(dataCount.country_data, dataCount.totalVotes);
-    result.ethnicity_data = vote.formatPercentofVotes(dataCount.ethnicity_data, dataCount.totalVotes);
-    result.gender_data = vote.formatPercentofVotes(dataCount.gender_data, dataCount.totalVotes);
-    result.profession_data = vote.formatPercentofVotes(dataCount.profession_data, dataCount.totalVotes);
-    result.religion_data = vote.formatPercentofVotes(dataCount.religion_data, dataCount.totalVotes);
-    result.politics_data = vote.formatPercentofVotes(dataCount.politics_data, dataCount.totalVotes);
+    result.age_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.age_data, dataCount.totalVotes), color);
+    result.country_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.country_data, dataCount.totalVotes), color);
+    result.ethnicity_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.ethnicity_data, dataCount.totalVotes), color);
+    result.gender_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.gender_data, dataCount.totalVotes), color);
+    result.profession_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.profession_data, dataCount.totalVotes), color);
+    result.religion_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.religion_data, dataCount.totalVotes), color);
+    result.politics_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.politics_data, dataCount.totalVotes), color);
+    
     console.log('result of reduced percents $%$%$%%$', result)
+    
     return result;
 }
 
@@ -170,10 +181,30 @@ vote.reducedMultipleChoiceColumn = function(dataArray){
     if (dataArray==null){
         return null
     }
-
-
-
 },
+
+vote.buildDataPoints = function( demographicVoteData, color){
+
+    class DataPoint {
+        constructor(name, y, color){
+            this.name = name;
+            this.y = name;
+            this.color = color
+        }
+      }
+
+    
+      return Object.keys(demographicVoteData).reduce((acc, curr)=>{
+        let dataPoint = {
+            name: curr,
+            y: demographicVoteData[curr],
+            color: color,
+          }
+          return [...acc, dataPoint];
+      }, [])
+}
+
+vote.formatDataPoint
 
 vote.categorizeAge = function(age){
     console.log('this is the AGEEEE', age)
@@ -232,29 +263,32 @@ vote.MCformatSendData = function(success){
     data.answerOptions = {}
     data.labels = [];
     data.answerOptions.mc_a_data = {};
-    data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data);
+    let colorA = randomColor();
+    data.answerOptions.mc_a_data.color = colorA
+    data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data, colorA);
     data.answerOptions.mc_a_data.answerOption = success.mc_a_option;
     data.answerOptions.mc_a_data.label = 'A'
-    data.answerOptions.mc_a_data.color = randomColor();
     data.labels.push('A')
-    data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_a_data.demographics.totalVotes/success.count)*100
+    data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_a_data.demographics.totalVotes/success.count)*100);
     
     data.answerOptions.mc_b_data = {};
-    data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data);
+    let colorB = randomColor();
+    data.answerOptions.mc_b_data.color = colorB
+    data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data, colorB);
     data.answerOptions.mc_b_data.answerOption = success.mc_b_option;
     data.answerOptions.mc_b_data.label = 'B'
-    data.answerOptions.mc_b_data.color = randomColor();
     data.labels.push('B')
-    data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_b_data.demographics.totalVotes/success.count)*100
+    data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_b_data.demographics.totalVotes/success.count)*100);
 
     if (success.mc_c_option){
         data.answerOptions.mc_c_data = {};
-        data.answerOptions.mc_c_data.demographics = vote.collectVoteColumnData(success.mc_c_data);
+        let colorC = randomColor();
+        data.answerOptions.mc_c_data.color = colorC
+        data.answerOptions.mc_c_data.demographics = vote.collectVoteColumnData(success.mc_c_data, colorC);
         data.answerOptions.mc_c_data.answerOption = success.mc_c_option;
         data.answerOptions.mc_c_data.label = 'C'
-        data.answerOptions.mc_c_data.color = randomColor();
         data.labels.push('C')
-        data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_c_data.demographics.totalVotes/success.count)*100
+        data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_c_data.demographics.totalVotes/success.count)*100);
 
     } else {
         data.answerOptions.mc_c_data = null
@@ -262,15 +296,27 @@ vote.MCformatSendData = function(success){
     
     if (success.mc_d_option){
         data.answerOptions.mc_d_data = {};
-        data.answerOptions.mc_d_data.demographics = vote.collectVoteColumnData(success.mc_d_data);
+        let colorD = randomColor();
+        data.answerOptions.mc_d_data.color = colorD
+        data.answerOptions.mc_d_data.demographics = vote.collectVoteColumnData(success.mc_d_data, colorD);
         data.answerOptions.mc_d_data.answerOption = success.mc_d_option;
         data.answerOptions.mc_d_data.label = 'D'
-        data.answerOptions.mc_d_data.color = randomColor();
         data.labels.push('D')
-        data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : (data.answerOptions.mc_d_data.demographics.totalVotes/success.count)*100
+        data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_d_data.demographics.totalVotes/success.count)*100);
     } else {
         data.answerOptions.mc_d_data = null
     }
+
+    data.demographicLabels = {
+        age_data:'Age',
+        country_data:'Country',
+        ethnicity_data:'Ethnicity',
+        gender_data:'Gender', 
+        profession_data:'Profession', 
+        religion_data:'Religion',
+        politics_data:'Politics',
+    };
+
 
     data.totalVotes = success.count;
     // data.expiration = expiration;
@@ -293,15 +339,21 @@ vote.getLabels = function(){
 
 
 
-vote.formatPercentofVotes = (categories, total) => {
+vote.formatDemographicPercent = (categories, total) => {
     console.log('categories', categories, total)
     Object.keys(categories).map((category)=>{
-        categories[category]= (categories[category])/total *100
+        let percent = (categories[category])/total *100
+        let rounded = Math.round(percent * 100) / 100
+        console.log("ROUNDED", rounded)
+        categories[category]= rounded
     })
-
-    console.log('vote categories...',categories)
     return categories
 }
+vote.formatTotalVotesPercent = (num)=>{
+    return Math.round(num * 100) / 100
+}
+
+vote.format
 
 module.exports = vote;
 

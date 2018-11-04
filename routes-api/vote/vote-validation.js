@@ -82,13 +82,12 @@ vote.validateCastVoteData = function(incomingPostVoteData){
 }
 
 
-vote.collectVoteColumnData = function(dataArray, color){
+vote.collectVoteColumnData = function(dataArray, color, answerOption){
     console.log('#@#@##@@#@# VOTE COLLECT', dataArray)
     
 
 
     let dataCount = dataArray.reduce((acc, current, i)=>{
-    acc.totalVotes++;
     //age
     console.log('CURRENT', current)
 	if(current[0]===null){
@@ -151,7 +150,6 @@ vote.collectVoteColumnData = function(dataArray, color){
     }
 	return acc
     }, {
-        totalVotes:0,
         age_data:{},
         country_data:{},
         ethnicity_data:{},
@@ -163,15 +161,14 @@ vote.collectVoteColumnData = function(dataArray, color){
     
     let result = {}
 
-    result.totalVotes = dataCount.totalVotes
-    result.age_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.age_data, dataCount.totalVotes), color);
-    result.country_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.country_data, dataCount.totalVotes), color);
-    result.ethnicity_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.ethnicity_data, dataCount.totalVotes), color);
-    result.gender_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.gender_data, dataCount.totalVotes), color);
-    result.profession_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.profession_data, dataCount.totalVotes), color);
-    result.religion_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.religion_data, dataCount.totalVotes), color);
-    result.politics_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.politics_data, dataCount.totalVotes), color);
-    
+    result.age_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.age_data, dataArray.length), color, answerOption);
+    result.country_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.country_data, dataArray.length), color, answerOption);
+    result.ethnicity_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.ethnicity_data, dataArray.length), color, answerOption);
+    result.gender_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.gender_data, dataArray.length), color, answerOption);
+    result.profession_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.profession_data, dataArray.length), color, answerOption);
+    result.religion_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.religion_data, dataArray.length), color, answerOption);
+    result.politics_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.politics_data, dataArray.length), color, answerOption);
+    // delet
     console.log('result of reduced percents $%$%$%%$', result)
     
     return result;
@@ -183,12 +180,13 @@ vote.reducedMultipleChoiceColumn = function(dataArray){
     }
 },
 
-vote.buildDataPoints = function( demographicVoteData, color){
+vote.buildDataPoints = function( demographicVoteData, color, answerOption){
 
     class DataPoint {
         constructor(name, y, color){
             this.name = name;
             this.y = name;
+            
             this.color = color
         }
       }
@@ -197,6 +195,7 @@ vote.buildDataPoints = function( demographicVoteData, color){
       return Object.keys(demographicVoteData).reduce((acc, curr)=>{
         let dataPoint = {
             name: curr,
+            id: answerOption,
             y: demographicVoteData[curr],
             color: color,
           }
@@ -265,30 +264,30 @@ vote.MCformatSendData = function(success){
     data.answerOptions.mc_a_data = {};
     let colorA = randomColor();
     data.answerOptions.mc_a_data.color = colorA
-    data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data, colorA);
+    data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data, colorA, 'A');
     data.answerOptions.mc_a_data.answerOption = success.mc_a_option;
     data.answerOptions.mc_a_data.label = 'A'
     data.labels.push('A')
-    data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_a_data.demographics.totalVotes/success.count)*100);
+    data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_a_data.length/success.count)*100);
     
     data.answerOptions.mc_b_data = {};
     let colorB = randomColor();
     data.answerOptions.mc_b_data.color = colorB
-    data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data, colorB);
+    data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data, colorB, 'B');
     data.answerOptions.mc_b_data.answerOption = success.mc_b_option;
     data.answerOptions.mc_b_data.label = 'B'
     data.labels.push('B')
-    data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_b_data.demographics.totalVotes/success.count)*100);
+    data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_b_data.length/success.count)*100);
 
     if (success.mc_c_option){
         data.answerOptions.mc_c_data = {};
         let colorC = randomColor();
         data.answerOptions.mc_c_data.color = colorC
-        data.answerOptions.mc_c_data.demographics = vote.collectVoteColumnData(success.mc_c_data, colorC);
+        data.answerOptions.mc_c_data.demographics = vote.collectVoteColumnData(success.mc_c_data, colorC, 'C');
         data.answerOptions.mc_c_data.answerOption = success.mc_c_option;
         data.answerOptions.mc_c_data.label = 'C'
         data.labels.push('C')
-        data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_c_data.demographics.totalVotes/success.count)*100);
+        data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_c_data.length/success.count)*100);
 
     } else {
         data.answerOptions.mc_c_data = null
@@ -298,11 +297,11 @@ vote.MCformatSendData = function(success){
         data.answerOptions.mc_d_data = {};
         let colorD = randomColor();
         data.answerOptions.mc_d_data.color = colorD
-        data.answerOptions.mc_d_data.demographics = vote.collectVoteColumnData(success.mc_d_data, colorD);
+        data.answerOptions.mc_d_data.demographics = vote.collectVoteColumnData(success.mc_d_data, colorD, 'D');
         data.answerOptions.mc_d_data.answerOption = success.mc_d_option;
         data.answerOptions.mc_d_data.label = 'D'
         data.labels.push('D')
-        data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((data.answerOptions.mc_d_data.demographics.totalVotes/success.count)*100);
+        data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_d_data.length/success.count)*100);
     } else {
         data.answerOptions.mc_d_data = null
     }

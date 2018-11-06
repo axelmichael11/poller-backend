@@ -41,7 +41,9 @@ module.exports = {
         },
         MCgetVotes : (res, user, voteData)=> {
           Client.query(`       
-                  SELECT cardinality(votes) as count, 
+                  SELECT cardinality(votes) as count,
+                  polls.author_username,
+                  polls.question,
                   polls.mc_a_option,
                   polls.mc_b_option,
                   polls.mc_c_option,
@@ -56,6 +58,8 @@ module.exports = {
                   AND created_at=($1) 
                   AND ($3) = ANY(votes)
                   GROUP BY 
+                  polls.author_username,
+                  polls.question,
                   polls.mc_a_option,
                   polls.mc_b_option,
                   polls.mc_c_option,
@@ -121,7 +125,7 @@ module.exports = {
           polls.mc_b_data,
           polls.mc_c_data,
           polls.mc_d_data,
-          polls.array_no_data, 
+          polls.question,
           cardinality(votes) as count;
         `,
         [

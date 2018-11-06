@@ -318,6 +318,8 @@ vote.MCformatSendData = function(success){
 
 
     data.totalVotes = success.count;
+    data.question = success.question;
+    data.author_username = success.author_username;
     // data.expiration = expiration;
     console.log('this is the MC DATA TO SEND', data)
     return data

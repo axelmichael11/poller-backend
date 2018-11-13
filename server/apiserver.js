@@ -17,7 +17,12 @@ if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
 
 //app is using...
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors({
+  preflightContinue: false,
+  origin: process.env.ORIGIN,
+  // credentials: true, 
+  methods: ['GET', 'PUT', 'POST'],
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

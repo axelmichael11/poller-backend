@@ -16,7 +16,14 @@ vote.getVotes = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
-        query.NEWYNgetVotes(res, user, voteData)
+        if (voteData.type == 'YN'){
+          query.NEWYNgetVotes(res, user, voteData)
+        }
+        if (voteData.type == 'MC'){
+          query.MCgetVotes(res, user, voteData)
+        } else {
+          throw new Error('Unidentified poll type')
+        }
       })
       .catch(err=>console.log(err))
     })

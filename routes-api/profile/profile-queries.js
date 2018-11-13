@@ -47,7 +47,7 @@ module.exports = {
               country=($6),
               politics=($7)
               WHERE id=($8)
-              RETURNING age, ethnicity, profession, religion, gender, country;`,
+              RETURNING age, ethnicity, profession, religion, gender, country, politics;`,
               [profileInfo.age,
               profileInfo.ethnicity,
               profileInfo.profession,

@@ -18,10 +18,11 @@ poll.postPoll = (req, res) => {
       validation.validateUid(user)
       .then(user=>{
         if (validatedPoll.type == 'YN'){
-          query.postYesNoPoll(res, user, validatedPoll)
+          validatedPoll.answerOptions = ['Yes','No']
+          query.postPoll(res, user, validatedPoll)
         }
         if (validatedPoll.type == 'MC'){
-          query.postMultipleChoicePoll(res, user, validatedPoll)
+          query.postPoll(res, user, validatedPoll)
         } else {
           throw new Error('Unidentified poll type')
         }

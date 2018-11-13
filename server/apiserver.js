@@ -90,12 +90,12 @@ app.use(require('../routes-api/feedback'));
 
 
 //CRON JOBS
-const updatePollTask = require('../database/cron-jobs').updatePolls;
+// const updatePollTask = require('../database/cron-jobs').updatePolls; POLLS ARE NOT DELETED
 const deleteReportedPolls = require('../database/cron-jobs').deleteReportedPolls;
 
 //CRON JOBS ON
 deleteReportedPolls.start();
-updatePollTask.start();
+// updatePollTask.start();
 
 app.use(function(err, req, res, next){
   console.error(err.stack);

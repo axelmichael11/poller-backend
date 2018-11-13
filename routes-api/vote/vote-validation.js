@@ -4,7 +4,7 @@ const randomColor = require('randomcolor');
 const ethnicity_data = require('../../lib/ethnicities')
 const profession_data = require('../../lib/professions')
 const politics_data = require('../../lib/politics')
-
+const countries_data = require('../../lib/countries')
 const vote = {};
 
 const validator = require('../../lib/validation-methods')
@@ -34,6 +34,7 @@ vote.validateCastVoteData = function(incomingPostVoteData){
     let {author_username,
         created_at,
         age, 
+        politics,
         country, 
         ethnicity, 
         gender,  
@@ -43,7 +44,7 @@ vote.validateCastVoteData = function(incomingPostVoteData){
         type } = incomingPostVoteData;
 
 
-    let voteData = Object.assign({},{created_at,age, country, ethnicity, gender, profession, religion, vote, author_username, type,});
+    let voteData = Object.assign({},{created_at,age, country, ethnicity, gender, profession, religion, vote, author_username, politics, type,});
 
     if (!voteData.created_at  || typeof voteData.created_at !== 'string'){
         throw new Error('invalid created_at type or length, or nonexistant property');
@@ -63,6 +64,10 @@ vote.validateCastVoteData = function(incomingPostVoteData){
     if (validator.notNumberOrNull(voteData.ethnicity)){
         throw new Error('invalid ethnicity data type');
     }
+    if (validator.notNumberOrNull(voteData.politics)){
+        throw new Error('invalid politics data type');
+    }
+
     if (validator.notNumberOrNull(voteData.profession)){
         throw new Error('invalid profession data type');
     }
@@ -91,35 +96,32 @@ vote.collectVoteColumnData = function(dataArray, color, answerOption){
     //age
     console.log('CURRENT', current)
 	if(current[0]===null){
-
-        acc.age_data['Unknown']=+1;
+        acc.age_data['Unknown']= vote.incrementDemographicCategory(acc.age_data, 'Unknown');
     } else {
         let age = vote.categorizeAge(dataArray[i][0])
-        console.log('AGEEEE',age)
         acc.age_data[age]=+1
     }
     //country
     if(current[1]===null){
-        acc.country_data['Unknown']=+1; 
+        acc.country_data['Unknown'] = vote.incrementDemographicCategory(acc.country_data, 'Unknown');
     } else {
-        acc.country_data[current[1]]=+1
+        acc.country_data[countries_data[current[1]]]=+1
     }
     //ethnicity
     if(current[2]===null){
-        acc.ethnicity_data['Unknown']=+1; 
+        acc.ethnicity_data['Unknown'] = vote.incrementDemographicCategory(acc.ethnicity_data, 'Unknown');
     } else {
-
         acc.ethnicity_data[ethnicity_data[current[2]]]=+1
     }
     //profession
     if(current[3]===null){
-        acc.profession_data['Unknown']=+1; 
+        acc.profession_data['Unknown'] = vote.incrementDemographicCategory(acc.profession_data, 'Unknown');
     } else {
         acc.profession_data[profession_data[current[3]]]=+1
     }
     //gender
     if(current[4]===null){
-        acc.gender_data['Unknown']=+1; 
+        acc.gender_data['Unknown'] = vote.incrementDemographicCategory(acc.gender_data, 'Unknown');
     } else {
         let gender;
         if (current[4]=='M'){
@@ -127,11 +129,11 @@ vote.collectVoteColumnData = function(dataArray, color, answerOption){
         } else {
             gender = 'female';
         }
-        acc.gender_data[gender]=+1
+        acc.gender_data[gender] = vote.incrementDemographicCategory(acc.gender_data, gender);
     }
     //religion
     if(current[5]===null){
-        acc.religion_data['Unknown']=+1; 
+        acc.religion_data['Unknown'] = vote.incrementDemographicCategory(acc.religion_data, 'Unknown');
     } else {
         let religion;
         if (current[5]==='true'){
@@ -139,13 +141,14 @@ vote.collectVoteColumnData = function(dataArray, color, answerOption){
         } else {
             religion = 'not religious';
         }
-        acc.religion_data[religion]=+1
+        acc.religion_data[religion]= vote.incrementDemographicCategory(acc.religion_data, religion);
     }
 
     // politics
     if(current[6]===null){
-        acc.politics_data['Unknown']=+1; 
+        acc.politics_data['Unknown'] = vote.incrementDemographicCategory(acc.politics_data, 'Unknown');        
     } else {
+        console.log('POLITICS DATA existing....', current[6])
         acc.politics_data[politics_data[current[6]]]=+1
     }
 	return acc
@@ -160,18 +163,26 @@ vote.collectVoteColumnData = function(dataArray, color, answerOption){
     });
     
     let result = {}
-
-    result.age_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.age_data, dataArray.length), color, answerOption);
-    result.country_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.country_data, dataArray.length), color, answerOption);
-    result.ethnicity_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.ethnicity_data, dataArray.length), color, answerOption);
+    result.age_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.age_data, dataArray.length), color, answerOption );
+    result.country_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.country_data, dataArray.length), color, answerOption, 'Country');
+    result.ethnicity_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.ethnicity_data, dataArray.length), color, answerOption, 'Ethnicity');
     result.gender_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.gender_data, dataArray.length), color, answerOption);
-    result.profession_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.profession_data, dataArray.length), color, answerOption);
+    result.profession_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.profession_data, dataArray.length), color, answerOption, 'Profession');
     result.religion_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.religion_data, dataArray.length), color, answerOption);
     result.politics_data = vote.buildDataPoints(vote.formatDemographicPercent(dataCount.politics_data, dataArray.length), color, answerOption);
     // delet
     console.log('result of reduced percents $%$%$%%$', result)
+    console.log('DATA COUNT' , dataCount)
     
     return result;
+}
+
+vote.incrementDemographicCategory = function(demographicData , category){
+    if (!demographicData[category]){
+        return 1;
+    } else {
+        return demographicData[category]+1;
+    }
 }
 
 vote.reducedMultipleChoiceColumn = function(dataArray){
@@ -180,25 +191,16 @@ vote.reducedMultipleChoiceColumn = function(dataArray){
     }
 },
 
-vote.buildDataPoints = function( demographicVoteData, color, answerOption){
-
-    class DataPoint {
-        constructor(name, y, color){
-            this.name = name;
-            this.y = name;
-            
-            this.color = color
-        }
-      }
-
+vote.buildDataPoints = function(demographicVoteData, color, answerOption , demographic){
     
       return Object.keys(demographicVoteData).reduce((acc, curr)=>{
         let dataPoint = {
+            title: answerOption,
             name: curr,
             id: answerOption,
             y: demographicVoteData[curr],
             color: color,
-          }
+        }
           return [...acc, dataPoint];
       }, [])
 }
@@ -235,24 +237,49 @@ vote.categorizeAge = function(age){
 }
 
 
-vote.YNformatSendData = function(yes_data_array, no_data_array, voteCount, expiration){
-
-    let isZero = (voteCount ===0);
+vote.YNformatSendData = function(success){
+    console.log("SUCCESS FROM DB FOR MC", success);
+    let isZero = (success.voteCount ===0);
     let data = {};
-    data.totals_data = {}
     data.type = 'YN'
-    //demographic data
-    data.yes_data = vote.collectVoteColumnData(yes_data_array);
-    data.no_data = vote.collectVoteColumnData(no_data_array);
+    data.answerOptions = {}
+    data.labels = [];
+    data.answerOptions.mc_a_data = {};
+    let colorA = randomColor();
+    data.answerOptions.mc_a_data.color = colorA
+    data.answerOptions.mc_a_data.demographics = vote.collectVoteColumnData(success.mc_a_data, colorA, 'Yes');
+    data.answerOptions.mc_a_data.answerOption = success.mc_a_option;
+    data.answerOptions.mc_a_data.label = 'Yes'
+    data.labels.push('Yes')
+    data.answerOptions.mc_a_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_a_data.length/success.count)*100);
+    
+    data.answerOptions.mc_b_data = {};
+    let colorB = randomColor();
+    data.answerOptions.mc_b_data.color = colorB
+    data.answerOptions.mc_b_data.demographics = vote.collectVoteColumnData(success.mc_b_data, colorB, 'Yes');
+    data.answerOptions.mc_b_data.answerOption = success.mc_b_option;
+    data.answerOptions.mc_b_data.label = 'No'
+    data.labels.push('No')
+    data.answerOptions.mc_b_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_b_data.length/success.count)*100);
 
-    //totals data
-    data.totals_data.yesVotes = isZero ? 0 : (data.yes_data.totalVotes/voteCount)*100;
-    data.totals_data.noVotes = isZero ? 0 : (data.no_data.totalVotes/voteCount)*100;
-    data.totals_data.totalVotes = voteCount;
+    data.demographicLabels = {
+        age_data:'Age',
+        country_data:'Country',
+        ethnicity_data:'Ethnicity',
+        gender_data:'Gender', 
+        profession_data:'Profession', 
+        religion_data:'Religion',
+        politics_data:'Politics',
+    };
+
+
+    data.totalVotes = success.count;
+    data.question = success.question;
+    data.author_username = success.author_username;
     // data.expiration = expiration;
-    console.log('this is the DATA TO SEND', data)
+    console.log('this is the YN DATA TO SEND', data)
     return data
-}
+},
 
 vote.MCformatSendData = function(success){
     console.log("SUCCESS FROM DB FOR MC", success);
@@ -289,8 +316,6 @@ vote.MCformatSendData = function(success){
         data.labels.push('C')
         data.answerOptions.mc_c_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_c_data.length/success.count)*100);
 
-    } else {
-        data.answerOptions.mc_c_data = null
     }
     
     if (success.mc_d_option){
@@ -302,8 +327,6 @@ vote.MCformatSendData = function(success){
         data.answerOptions.mc_d_data.label = 'D'
         data.labels.push('D')
         data.answerOptions.mc_d_data.totalVotePercent = isZero ? 0 : vote.formatTotalVotesPercent((success.mc_d_data.length/success.count)*100);
-    } else {
-        data.answerOptions.mc_d_data = null
     }
 
     data.demographicLabels = {
@@ -345,7 +368,6 @@ vote.formatDemographicPercent = (categories, total) => {
     Object.keys(categories).map((category)=>{
         let percent = (categories[category])/total *100
         let rounded = Math.round(percent * 100) / 100
-        console.log("ROUNDED", rounded)
         categories[category]= rounded
     })
     return categories

@@ -7,6 +7,7 @@ const env = {
     users: process.env.userTable
 };
 
+const exploreValidate = require('./explore-validation')
 
 
 
@@ -17,6 +18,7 @@ module.exports = {
                         ($1)-(EXTRACT(day from (now()-date)*24)+EXTRACT(hour from (now()-date)))
                         as expiration,
                         polltype as type,
+                        subject,
                         case
                             when
                                 (($2) = ANY(votes))
@@ -27,27 +29,32 @@ module.exports = {
                         case
                             when
                                 (($2) = ANY(votes))
-                            then mc_a_data
+                            then 
+                                coalesce(array_length(mc_a_data, 1), 0)
                         end
                         as mc_a_data,
                         case
                             when
                                 (($2) = ANY(votes))
-                            then mc_b_data
+                            then coalesce(array_length(mc_b_data, 1), 0)
                         end
                         as mc_b_data,
                         case
                             when
                                 (($2) = ANY(votes))
-                            then mc_c_data
+                            then coalesce(array_length(mc_c_data, 1), 0)
                         end
                         as mc_c_data,
                         case
                             when
                                 (($2) = ANY(votes))
-                            then mc_d_data
+                            then coalesce(array_length(mc_d_data, 1), 0)
                         end
-                        as mc_d_data
+                        as mc_d_data,
+                        mc_a_option,
+                        mc_b_option,
+                        mc_c_option,
+                        mc_d_option
                         FROM polls
                         ORDER BY random()
                         LIMIT 20;
@@ -60,7 +67,8 @@ module.exports = {
                     if (success){
                         if (success.rows){
                             console.log('RESULTS', success.rows)
-                            res.status(200).send(success.rows)
+                            let results = exploreValidate.formatExploreData(success.rows);
+                            res.status(200).send(results)
                         }
                     }
                     if (err) {
@@ -70,27 +78,3 @@ module.exports = {
                 })
         }
 }
-
-
-// SELECT question, subject, author_username, created_at,
-//                 ($1)-(EXTRACT(day from (now()-date)*24)+EXTRACT(hour from (now()-date)))
-//                 as expiration,
-//                     case when EXISTS (select ($2) = ANY(votes) from polls)
-//                     then
-//                     'true'
-//                     else
-//                     'false'
-//                     end as already_answered, 
-//                 polltype as type
-//                 FROM polls
-//                 ORDER BY random()
-//                 LIMIT 20;
-
-
-// (case when EXISTS (select 1 from polls where ($2) = ANY(votes))
-//                 then
-//                 mc_a_option
-//                 end), 
-
-
-// (case when EXISTS (select 1 from polls where ($2) = ANY(votes) AND polls.created_at = created_at)

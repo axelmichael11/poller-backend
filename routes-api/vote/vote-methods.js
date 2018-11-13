@@ -16,15 +16,7 @@ vote.getVotes = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
-        if (voteData.type == 'YN'){
-          query.YNgetVotes(res, user, voteData)
-        }
-        if (voteData.type == 'MC'){
-          query.MCgetVotes(res, user, voteData)
-        } else {
-          throw new Error('Unidentified poll type')
-        }
-        // query.getVotes(res, user, voteData)
+        query.NEWYNgetVotes(res, user, voteData)
       })
       .catch(err=>console.log(err))
     })
@@ -38,14 +30,7 @@ vote.getVotes = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
-        if (voteData.type == 'YN'){
-          query.YNcastVote(res, user, voteData)
-        }
-        if (voteData.type == 'MC'){
-          query.MCcastVote(res, user, voteData)
-        } else {
-          throw new Error('Unidentified poll type')
-        }
+        query.NEWYNcastVote(res, user, voteData)
         console.log('hitting query stage', voteData )
         // query.castVote(res, user, voteData)
       })

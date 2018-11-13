@@ -17,11 +17,13 @@ if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
 
 //app is using...
 app.use(morgan('dev'));
-// app.use(cors({
-//   "origin": "*",
-//   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-//   "preflightContinue": false,
-// }));
+app.use(cors({
+  "origin": process.env.ORIGIN,
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "access-control-allow-headers" : "Content-Type, Authorization, Content-Length, X-Requested-With",
+  "access-control-allow-methods" :"GET,PUT,POST,DELETE,OPTIONS",
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

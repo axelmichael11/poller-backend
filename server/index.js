@@ -13,7 +13,6 @@ const app = express();
 
 require('dotenv').config();
 
-const cors = require('cors');
 const morgan = require('morgan');
 const pg = require('pg');
 

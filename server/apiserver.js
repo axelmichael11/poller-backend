@@ -19,6 +19,7 @@ if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
 app.use(morgan('dev'));
 app.use(cors({
  ' Access-Control-Allow-Origin': "*",
+ "Access-Control-Allow-Origin": process.env.ORIGIN,
   "origin": process.env.ORIGIN,
   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "preflightContinue": false,

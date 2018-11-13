@@ -16,7 +16,14 @@ vote.getVotes = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
-        query.getVotes(res, user, voteData)
+        if (voteData.type == 'YN'){
+          query.NEWYNgetVotes(res, user, voteData)
+        }
+        if (voteData.type == 'MC'){
+          query.MCgetVotes(res, user, voteData)
+        } else {
+          throw new Error('Unidentified poll type')
+        }
       })
       .catch(err=>console.log(err))
     })
@@ -30,8 +37,9 @@ vote.getVotes = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
+        query.NEWYNcastVote(res, user, voteData)
         console.log('hitting query stage', voteData )
-        query.castVote(res, user, voteData)
+        // query.castVote(res, user, voteData)
       })
       .catch(err=>console.log(err))
     })

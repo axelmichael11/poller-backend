@@ -17,7 +17,15 @@ poll.postPoll = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
-        query.postPollQuery(res, user, validatedPoll)
+        if (validatedPoll.type == 'YN'){
+          validatedPoll.answerOptions = ['Yes','No']
+          query.postPoll(res, user, validatedPoll)
+        }
+        if (validatedPoll.type == 'MC'){
+          query.postPoll(res, user, validatedPoll)
+        } else {
+          throw new Error('Unidentified poll type')
+        }
       })
       .catch(err=>console.log(err))
     })

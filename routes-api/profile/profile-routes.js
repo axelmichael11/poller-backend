@@ -13,7 +13,6 @@
 //   };
 
 const superagent = require('superagent');
-const bcrypt = require('bcrypt');
 const profile = require('../lib/profile-methods');
 const Client = require('../database/client')
 const ProfileRouter = require('express').Router();

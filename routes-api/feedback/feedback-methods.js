@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const superagent = require('superagent');
 
 const validation = require('../../lib/validation-methods')

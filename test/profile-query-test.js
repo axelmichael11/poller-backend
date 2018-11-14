@@ -3,7 +3,7 @@ require('babel-register')
 const expect = require('expect')
 const superagent = require('superagent')
 
-const server = require('../server/apiserver.js')
+const server = require('../server/index.js')
 const API_URL = process.env.API_URL;
 
 const API_TOKEN = process.env.API_TOKEN;

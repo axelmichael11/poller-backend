@@ -10,7 +10,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 require('dotenv').config();
-const PORT = process.env.port || '3000';
+const PORT = process.env.port || 3000;
 
 if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
   throw 'Make sure you have AUTH0_DOMAIN, and AUTH0_AUDIENCE in your .env file';
@@ -88,7 +88,7 @@ const state = {
       state.isOn = true
       return Client.connect()
       .then(() => {
-        state.http = app.listen( PORT || '3000', () => {
+        state.http = app.listen( PORT || 3000, () => {
           console.log('__SERVER_UP__', PORT)
           resolve()
         })

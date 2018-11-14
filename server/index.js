@@ -88,7 +88,7 @@ const state = {
       state.isOn = true
       return Client.connect()
       .then(() => {
-        state.http = app.listen( PORT || 3000, () => {
+        state.http = app.listen( PORT, () => {
           console.log('__SERVER_UP__', PORT)
           resolve()
         })

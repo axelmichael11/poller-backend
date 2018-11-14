@@ -9,6 +9,36 @@ const env = {
 
 
 module.exports = {
+  checkIfVoted: (user, voteData) =>{
+    Client.query(`       
+                SELECT polltype as type
+                FROM polls
+                WHERE author_username=($2) 
+                AND created_at=($1) 
+                AND ($3) = ANY(votes)
+                GROUP BY polls.array_yes_data, polls.array_no_data, polls.polltype, cardinality(polls.votes);
+                `,
+              [
+                voteData.created_at,
+                voteData.author_username,
+                user[`${env.uid}`],
+              ],
+              function(err, success) {
+                if (success) {
+                  console.log('this is success from db', success)
+                  if (success.rows[0]) {
+                      let data = vollValidate.YNformatSendData(success.rows[0])
+                    res.status(200).send(data)
+                  }
+                    res.status(401).send()
+                } else {
+                  if (err) {
+                    console.log('err.name', err)
+                    res.status(500).send({error: err})
+                  }
+                }
+              })
+  },
   YNgetVotes : (res, user, voteData)=> {
         Client.query(`       
                 SELECT cardinality(votes) as count, array_yes_data, array_no_data, polltype as type
@@ -214,8 +244,9 @@ module.exports = {
         },
 
         MCcastVote : function(res, user, voteData){
-          // console.log('THIS', this)
+
           let voteColumn = this.determineMCVoteColumn(voteData.vote);
+          console.log('VOTE COLUMNNN', voteColumn)
           Client.query(`
           UPDATE polls 
           SET ${voteColumn} = ${voteColumn} || ARRAY[[($1),($2),($3),($4),($5),($6),($7)]],
@@ -267,6 +298,7 @@ module.exports = {
       },
       
       determineMCVoteColumn: function (vote){
+        console.log('HITTING VOTE COLUMN', vote)
         if (vote=='A'){
           return 'mc_a_data'          
         }

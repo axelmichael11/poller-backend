@@ -88,10 +88,11 @@ const state = {
       state.isOn = true
       return Client.connect()
       .then(() => {
-        state.http = app.listen( PORT, () => {
+        state.http = app.listen( PORT || 3000, () => {
           console.log('__SERVER_UP__', PORT)
           resolve()
         })
+
       })
       .catch((error)=>{
         console.log('this is the erroer!',error)

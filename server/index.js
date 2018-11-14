@@ -1,140 +1,122 @@
-//imports
 const express = require('express');
-const logger = require('morgan');
+const app = express();
+const pg = require('pg');
+const jwt = require('express-jwt');
+const jwtAuthz = require('express-jwt-authz');
+const jwksRsa = require('jwks-rsa');
+const cors = require('cors');
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const passport = require('passport');
-const Auth0Strategy = require('passport-auth0');
-const flash = require('connect-flash');
-const path = require('path');
-// connpmst process = require('process');
-const app = express();
 
 require('dotenv').config();
 
-const morgan = require('morgan');
-const pg = require('pg');
+if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
+  throw 'Make sure you have AUTH0_DOMAIN, and AUTH0_AUDIENCE in your .env file';
+}
 
 //app is using...
-app.use(logger('dev'));
-app.use(logger('dev'));
+app.use(morgan('dev'));
+app.use(cors({
+//  "Access-Control-Allow-Origin": process.env.ORIGIN,
+  origin: process.env.ORIGIN,
+  // 'Access-Control-Allow-Methods':'GET, POST, OPTIONS, PUT, PATCH, DELETE',
+  preflightContinue: false,
+  allowedHeaders:['Authorization', 'Content-Type','Content-Length', 'X-Requested-With']
+  // "access-control-allow-headers" : "Content-Type, Authorization, Content-Length, X-Requested-With",
+  // "access-control-allow-methods" :"GET,PUT,POST,DELETE,OPTIONS",
+}));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
-app.use(cookieParser());
-app.use(
-  session({
-    secret: 'shhhhhhhhh',
-    resave: true,
-    saveUninitialized: true
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(flash());
-
-// Handle auth failure error messages
-app.use(function(req, res, next) {
-  if (req && req.query && req.query.error) {
-    req.flash("error", req.query.error);
-  }
-  if (req && req.query && req.query.error_description) {
-    req.flash("error_description", req.query.error_description);
-  }
-  next();
- });
-
-//client pg variables
-const connectionString = process.env.DATABASE_URI;
-const client = new pg.Client({
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.DB,
-  port: process.env.DBPORT,
-  host: process.env.DBHOST,
-  ssl: true
-});
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
-//auth0 combined with passport
-const strategy = new Auth0Strategy(
-  {
-    domain: process.env.AUTH0_DOMAIN,
-    clientID: process.env.AUTH0_CLIENT_ID,
-    clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL:
-      process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
-  },
-  function(accessToken, refreshToken, extraParams, profile, done) {
-    // accessToken is the token to call Auth0 API (not needed in the most cases)
-    // extraParams.id_token has the JSON Web Token
-    // profile has all the information from the user
-    return done(null, profile);
-  }
-);
+const checkJwt = require('./checkjwt')
 
-passport.use(strategy);
+const checkScopes = jwtAuthz(['read:messages']);
+
+
+
+const Client = require('../database/client.js')
+
+
+
+
+
+
 
 //ROUTES
-require('../routes/index.js')(app, passport, client)
-require('../routes/user.js')(app, client)
+app.use(require('../routes-api/profile'));
+app.use(require('../routes-api/poll'));
+app.use(require('../routes-api/explore'));
+app.use(require('../routes-api/vote'));
+app.use(require('../routes-api/report'));
+app.use(require('../routes-api/feedback'));
 
-// you can use this section to keep a smaller payload
-passport.serializeUser(function(user, done) {
-  done(null, user);
+
+//CRON JOBS
+// const updatePollTask = require('../database/cron-jobs').updatePolls; POLLS ARE NOT DELETED
+const deleteReportedPolls = require('../database/cron-jobs').deleteReportedPolls;
+
+//CRON JOBS ON
+deleteReportedPolls.start();
+// updatePollTask.start();
+
+app.use(function(err, req, res, next){
+  console.error(err.stack);
+  return res.status(err.status).json({ message: err.message });
 });
 
-passport.deserializeUser(function(user, done) {
-  done(null, user);
-});
-
-
-
-
-// require('./server/routes')(app);
-// app.get('*', (req, res) => res.status(200).send({
-//   message: 'Welcome to the beginning of nothingness.',
-// }));
-
-// catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  const err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+  });
 
 
 const state = {
-  isOn: false, 
-  http: null,
-}
-
-const server = {};
-
-server.start = () => {
-  // const client = new pg.Client(process.env.DATABASE_URI);
-  return new Promise((resolve, reject) => {
-    // console.log('this is hte client!', client);
-    if (state.isOn) 
-        return reject(new Error('USAGE ERROR: the state is on'))
-    state.isOn = true
-    // console.log('this is the client database', client)
-    return client.connect()
-    .then(() => {
-      state.http = app.listen(process.env.PORT, () => {
-        console.log('__SERVER_UP__', process.env.PORT)
-        resolve()
+    isOn: false, 
+    http: null,
+  }
+  
+  const server = {};
+  
+  server.start = () => {
+    // const client = new pg.Client(process.env.DATABASE_URI);
+    return new Promise((resolve, reject) => {
+      // console.log('this is hte client!', client);
+      if (state.isOn) 
+          return reject(new Error('USAGE ERROR: the state is on'))
+      state.isOn = true
+      // console.log('this is the client database', client)
+      return Client.connect()
+      .then(() => {
+        state.http = app.listen(process.env.PORT, () => {
+          console.log('__SERVER_UP__', process.env.PORT)
+          resolve()
+        })
+      })
+      .catch((error)=>{
+        console.log('this is the erroer!',error)
       })
     })
-    .catch((error)=>{
-      console.log('this is the erroer!',error)
+  }
+  
+
+  server.stop = () => {
+    return new Promise((resolve, reject) => {
+      if (!state.isOn) return reject(new Error('USAGE ERROR: the state is off'))
+      return Client.end()
+        .then(() => {
+          state.http.close(() => {
+            console.log('__SERVER_DOWN__')
+            state.isOn = false
+            state.http = null
+            resolve()
+          })
+        })
+        .catch(reject)
     })
-  })
-}
-
-
-
-module.exports = server;
+  }
+  
+  
+  module.exports = server;

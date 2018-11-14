@@ -36,7 +36,16 @@ vote.getVotes = (req, res) => {
     .then(user=>{
       validation.validateUid(user)
       .then(user=>{
-        query.NEWYNcastVote(res, user, voteData)
+        if (voteData.type =='YN'){
+          query.NEWYNcastVote(res, user, voteData)
+        }
+        if (voteData.type =='MC'){
+          query.MCcastVote(res, user, voteData)
+        }
+        if (voteData.type !=='MC' && voteData.type !=='YN'){
+          console.log('HITTING NEITHER')
+          res.status(401).send()
+        }
         console.log('hitting query stage', voteData )
         // query.castVote(res, user, voteData)
       })

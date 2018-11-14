@@ -82,13 +82,10 @@ const state = {
   const server = {};
   
   server.start = () => {
-    // const client = new pg.Client(process.env.DATABASE_URI);
     return new Promise((resolve, reject) => {
-      // console.log('this is hte client!', client);
       if (state.isOn) 
           return reject(new Error('USAGE ERROR: the state is on'))
       state.isOn = true
-      // console.log('this is the client database', client)
       return Client.connect()
       .then(() => {
         state.http = app.listen( PORT || '3000', () => {

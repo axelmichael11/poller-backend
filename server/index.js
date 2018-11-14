@@ -19,9 +19,9 @@ if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
 app.use(morgan('dev'));
 app.use(cors({
 //  "Access-Control-Allow-Origin": process.env.ORIGIN,
-  origin: process.env.ORIGIN,
+  origin:process.env.ORIGIN, 
   // 'Access-Control-Allow-Methods':'GET, POST, OPTIONS, PUT, PATCH, DELETE',
-  preflightContinue: false,
+  preflightContinue: true,
   allowedHeaders:['Authorization', 'Content-Type','Content-Length', 'X-Requested-With']
   // "access-control-allow-headers" : "Content-Type, Authorization, Content-Length, X-Requested-With",
   // "access-control-allow-methods" :"GET,PUT,POST,DELETE,OPTIONS",

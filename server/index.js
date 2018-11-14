@@ -90,7 +90,7 @@ const state = {
       // console.log('this is the client database', client)
       return Client.connect()
       .then(() => {
-        state.http = app.listen(process.env.PORT || 3000, () => {
+        state.http = app.listen(process.env.PORT || '3000', () => {
           console.log('__SERVER_UP__', process.env.PORT)
           resolve()
         })
